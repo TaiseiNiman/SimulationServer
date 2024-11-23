@@ -1,0 +1,10 @@
+C:\Users\tk71\source\repos\test1111\test1111\bin\Debug\test1111.exe.config
+C:\Users\tk71\source\repos\test1111\test1111\bin\Debug\test1111.exe
+C:\Users\tk71\source\repos\test1111\test1111\bin\Debug\test1111.pdb
+C:\Users\tk71\source\repos\test1111\test1111\bin\Debug\websocket-sharp.dll
+C:\Users\tk71\source\repos\test1111\test1111\bin\Debug\websocket-sharp.xml
+C:\Users\tk71\source\repos\test1111\test1111\obj\Debug\test1111.csprojAssemblyReference.cache
+C:\Users\tk71\source\repos\test1111\test1111\obj\Debug\test1111.csproj.CoreCompileInputs.cache
+C:\Users\tk71\source\repos\test1111\test1111\obj\Debug\test1111.csproj.CopyComplete
+C:\Users\tk71\source\repos\test1111\test1111\obj\Debug\test1111.exe
+C:\Users\tk71\source\repos\test1111\test1111\obj\Debug\test1111.pdb
