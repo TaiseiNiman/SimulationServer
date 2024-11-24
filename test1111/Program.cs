@@ -10,23 +10,7 @@ using System.Timers;
 using System.Collections.Generic;
 using System.Diagnostics;
 
-public class CustomLogger : Logger
-{
-    public CustomLogger(LogLevel level, string file, Action<LogData, string> output)
-        : base(level, file, output)
-    {
-    }
 
-    public void CustomOutput(LogData data, string path)
-    {
-        if (data.Level == LogLevel.Fatal)
-        {
-            // Fatalレベルのログを無視
-            return;
-        }
-        base.Output(data, path);
-    }
-}
 public class UserLog : WebSocketBehavior
 {
     private static List<UserLog> clients = new List<UserLog>();
@@ -63,17 +47,17 @@ public class UserLog : WebSocketBehavior
         if (clientIp == serverIp)
         {
             // サーバーと同一デバイスからの接続
-            if(e.Data == "StartWorkshopSimulation")
+            if (e.Data == "StartWorkshopSimulation")
             {
                 //ワークショップのシミュレーションの開始を全クライアントに伝える
                 Broadcast("StartWorkshopSimulation");
             }
-            
+
         }
         else
         {
             // 通常の処理
-            
+
         }
     }
 
@@ -116,7 +100,7 @@ public class WebsocketTimer : WebSocketBehavior
     protected override void OnOpen()
     {
 
-        
+
     }
 
     protected override void OnMessage(MessageEventArgs e)
@@ -127,7 +111,7 @@ public class WebsocketTimer : WebSocketBehavior
 
 
 
-    
+
 }
 
 public class Program
@@ -160,7 +144,7 @@ public class Program
         broadcastTimer.Enabled = true;
 
         Console.WriteLine("コマンドを入力してください（サーバーを終了するには 'サーバーストップ' と入力）");
-        Console.WriteLine("コマンドを入力してください（シミュレーションを開始するには 'シミュレーションを開始する' と入力）：");
+        Console.WriteLine("コマンドを入力してください（シミュレーションを開始するには 'start' と入力）：");
 
         while (true)
         {
@@ -173,7 +157,7 @@ public class Program
 
             switch (input)
             {
-                case "シミュレーションを開始する":
+                case "start":
                     {
                         while (true)
                         {
@@ -185,7 +169,8 @@ public class Program
                             // 入力が数値に変換できるか確認
                             if (float.TryParse(input2, out SimulationTimeScale))
                             {
-                                if (SimulationTimeScale > 0) {
+                                if (SimulationTimeScale > 0)
+                                {
                                     //0以上のfloat値が入力された場合、ループを抜ける
                                     break;
                                 }
@@ -193,7 +178,7 @@ public class Program
                                 {
                                     Console.WriteLine("0以下の数値を入力しないでください.");
                                 }
-                                
+
                             }
                             else
                             {
@@ -273,7 +258,7 @@ public class Program
         {
             timeMultiplier = 40f; // 1時間が実時間1.5分で進む
         }
-        else if (hour >= 18 && hour < 24 )
+        else if (hour >= 18 && hour < 24)
         {
             timeMultiplier = 60f; // 1時間が実時間1分で進む
         }
