@@ -92,17 +92,65 @@ public class SimulationNotification : WebSocketBehavior
     {
         Send("Workshop: " + e.Data);
     }
+
+    private static List<SimulationNotification> clients = new List<SimulationNotification>();
+    
+
+    protected override void OnOpen()
+    {
+        lock (clients)
+        {
+            clients.Add(this);
+        }
+
+        var clientIp = Context.UserEndPoint.Address.ToString();
+        Console.WriteLine($"SimulationNotification->New client connected: {clientIp}");
+
+        //Broadcast($"New client connected: {clientIp}");
+    }
+
+    protected override void OnClose(CloseEventArgs e)
+    {
+        lock (clients)
+        {
+            clients.Remove(this);
+        }
+        var clientIp = Context.UserEndPoint.Address.ToString();
+        Console.WriteLine($"SimulationNotification->client removed: {clientIp}");
+
+        //Broadcast($"client removed: {clientIp}");
+    }
 }
 
 public class WebsocketTimer : WebSocketBehavior
 {
 
+    private static List<WebsocketTimer> clients = new List<WebsocketTimer>();
+
     protected override void OnOpen()
     {
+        lock (clients)
+        {
+            clients.Add(this);
+        }
 
+        var clientIp = Context.UserEndPoint.Address.ToString();
+        Console.WriteLine($"WebsocketTimer->New client connected: {clientIp}");
 
+        //Broadcast($"New client connected: {clientIp}");
     }
 
+    protected override void OnClose(CloseEventArgs e)
+    {
+        lock (clients)
+        {
+            clients.Remove(this);
+        }
+        var clientIp = Context.UserEndPoint.Address.ToString();
+        Console.WriteLine($"WebsocketTimer->client removed: {clientIp}");
+
+        //Broadcast($"client removed: {clientIp}");
+    } 
     protected override void OnMessage(MessageEventArgs e)
     {
         // クライアントからのメッセージを受信した場合の処理
@@ -127,6 +175,7 @@ public class Program
 
     public static void Main(string[] args)
     {
+        Console.OutputEncoding = Encoding.UTF8;
         wssv = new WebSocketServer("ws://0.0.0.0:8080");
         wssv.Log.Output = (_, __) => { };
         wssv.AddWebSocketService<UserLog>("/UserLog");
@@ -148,7 +197,9 @@ public class Program
 
         while (true)
         {
+            
             string input = Console.ReadLine();
+            
 
             if (input == "サーバーストップ")
             {
@@ -260,7 +311,7 @@ public class Program
         }
         else if (hour >= 18 && hour < 24)
         {
-            timeMultiplier = 60f; // 1時間が実時間1分で進む
+            timeMultiplier = 60f; // 1時間が実aa時間1分で進む
         }
         else
         {

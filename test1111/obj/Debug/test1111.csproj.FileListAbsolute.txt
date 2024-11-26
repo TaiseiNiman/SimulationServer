@@ -1,21 +1,33 @@
-C:\Users\tk71\source\repos\test1111\test1111\bin\Debug\test1111.exe.config
-C:\Users\tk71\source\repos\test1111\test1111\bin\Debug\test1111.exe
-C:\Users\tk71\source\repos\test1111\test1111\bin\Debug\test1111.pdb
-C:\Users\tk71\source\repos\test1111\test1111\bin\Debug\websocket-sharp.dll
-C:\Users\tk71\source\repos\test1111\test1111\bin\Debug\websocket-sharp.xml
-C:\Users\tk71\source\repos\test1111\test1111\obj\Debug\test1111.csprojAssemblyReference.cache
-C:\Users\tk71\source\repos\test1111\test1111\obj\Debug\test1111.csproj.CoreCompileInputs.cache
-C:\Users\tk71\source\repos\test1111\test1111\obj\Debug\test1111.csproj.CopyComplete
-C:\Users\tk71\source\repos\test1111\test1111\obj\Debug\test1111.exe
-C:\Users\tk71\source\repos\test1111\test1111\obj\Debug\test1111.pdb
-C:\Users\tk71\Documents\Unity Project\workshop\server\test1111\test1111\bin\Debug\Program.cs
-C:\Users\tk71\Documents\Unity Project\workshop\server\test1111\test1111\bin\Debug\test1111.exe.config
-C:\Users\tk71\Documents\Unity Project\workshop\server\test1111\test1111\bin\Debug\test1111.exe
-C:\Users\tk71\Documents\Unity Project\workshop\server\test1111\test1111\bin\Debug\test1111.pdb
-C:\Users\tk71\Documents\Unity Project\workshop\server\test1111\test1111\bin\Debug\websocket-sharp.dll
-C:\Users\tk71\Documents\Unity Project\workshop\server\test1111\test1111\bin\Debug\websocket-sharp.xml
-C:\Users\tk71\Documents\Unity Project\workshop\server\test1111\test1111\obj\Debug\test1111.csproj.CoreCompileInputs.cache
-C:\Users\tk71\Documents\Unity Project\workshop\server\test1111\test1111\obj\Debug\test1111.exe
-C:\Users\tk71\Documents\Unity Project\workshop\server\test1111\test1111\obj\Debug\test1111.pdb
-C:\Users\tk71\Documents\Unity Project\workshop\server\test1111\test1111\obj\Debug\test1111.csprojAssemblyReference.cache
-C:\Users\tk71\Documents\Unity Project\workshop\server\test1111\test1111\obj\Debug\test1111.csproj.CopyComplete
+C:/Users/tk71/source/repos/test1111/test1111/bin/Debug/test1111.exe.config
+C:/Users/tk71/source/repos/test1111/test1111/bin/Debug/test1111.exe
+C:/Users/tk71/source/repos/test1111/test1111/bin/Debug/test1111.pdb
+C:/Users/tk71/source/repos/test1111/test1111/bin/Debug/websocket-sharp.dll
+C:/Users/tk71/source/repos/test1111/test1111/bin/Debug/websocket-sharp.xml
+C:/Users/tk71/source/repos/test1111/test1111/obj/Debug/test1111.csprojAssemblyReference.cache
+C:/Users/tk71/source/repos/test1111/test1111/obj/Debug/test1111.csproj.CoreCompileInputs.cache
+C:/Users/tk71/source/repos/test1111/test1111/obj/Debug/test1111.csproj.CopyComplete
+C:/Users/tk71/source/repos/test1111/test1111/obj/Debug/test1111.exe
+C:/Users/tk71/source/repos/test1111/test1111/obj/Debug/test1111.pdb
+C:/Users/tk71/Documents/Unity Project/workshop/server/test1111/test1111/bin/Debug/Program.cs
+C:/Users/tk71/Documents/Unity Project/workshop/server/test1111/test1111/bin/Debug/test1111.exe.config
+C:/Users/tk71/Documents/Unity Project/workshop/server/test1111/test1111/bin/Debug/test1111.exe
+C:/Users/tk71/Documents/Unity Project/workshop/server/test1111/test1111/bin/Debug/test1111.pdb
+C:/Users/tk71/Documents/Unity Project/workshop/server/test1111/test1111/bin/Debug/websocket-sharp.dll
+C:/Users/tk71/Documents/Unity Project/workshop/server/test1111/test1111/bin/Debug/websocket-sharp.xml
+C:/Users/tk71/Documents/Unity Project/workshop/server/test1111/test1111/obj/Debug/test1111.csproj.AssemblyReference.cache
+C:/Users/tk71/Documents/Unity Project/workshop/server/test1111/test1111/obj/Debug/test1111.csproj.CoreCompileInputs.cache
+C:/Users/tk71/Documents/Unity Project/workshop/server/test1111/test1111/obj/Debug/test1111.csproj.Up2Date
+C:/Users/tk71/Documents/Unity Project/workshop/server/test1111/test1111/obj/Debug/test1111.exe
+C:/Users/tk71/Documents/Unity Project/workshop/server/test1111/test1111/obj/Debug/test1111.pdb
+/Users/tk71/Downloads/workshopForMac/websocketServer/WorkshopSimulationServer/test1111/bin/Debug/Program.cs
+/Users/tk71/Downloads/workshopForMac/websocketServer/WorkshopSimulationServer/test1111/bin/Debug/test1111.exe.config
+/Users/tk71/Downloads/workshopForMac/websocketServer/WorkshopSimulationServer/test1111/bin/Debug/test1111.exe
+/Users/tk71/Downloads/workshopForMac/websocketServer/WorkshopSimulationServer/test1111/bin/Debug/test1111.pdb
+/Users/tk71/Downloads/workshopForMac/websocketServer/WorkshopSimulationServer/test1111/bin/Debug/websocket-sharp.dll
+/Users/tk71/Downloads/workshopForMac/websocketServer/WorkshopSimulationServer/test1111/bin/Debug/websocket-sharp.xml
+/Users/tk71/Downloads/workshopForMac/websocketServer/WorkshopSimulationServer/test1111/obj/Debug/test1111.csproj.AssemblyReference.cache
+/Users/tk71/Downloads/workshopForMac/websocketServer/WorkshopSimulationServer/test1111/obj/Debug/test1111.exe.config
+/Users/tk71/Downloads/workshopForMac/websocketServer/WorkshopSimulationServer/test1111/obj/Debug/test1111.csproj.CoreCompileInputs.cache
+/Users/tk71/Downloads/workshopForMac/websocketServer/WorkshopSimulationServer/test1111/obj/Debug/test1111.csproj.CopyComplete
+/Users/tk71/Downloads/workshopForMac/websocketServer/WorkshopSimulationServer/test1111/obj/Debug/test1111.exe
+/Users/tk71/Downloads/workshopForMac/websocketServer/WorkshopSimulationServer/test1111/obj/Debug/test1111.pdb
