@@ -9,8 +9,114 @@ using WebSocketSharp.Server;
 using System.Timers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using test1111;
 using test1111.sqlite3_database;
 using System.Text.RegularExpressions;
+using System.Runtime.InteropServices;
+
+public class snsNotification: WebSocketBehavior
+{
+    private static List<snsNotification> clients = new List<snsNotification>();
+    public static IniReader snsTextFile;
+    public static int length;
+    public static snsNotification Instance;
+
+    public snsNotification()
+    {
+        Instance = this;
+        int i;
+        //snsTextFileの長さを求めておく
+        for(i = 1; true; i++)
+        {
+            if (snsTextFile.GetIniValue(i.ToString(), "Start") == null) break ;
+        }
+        length = i-1;
+    }
+
+    protected override void OnOpen()
+    {
+        lock (clients)
+        {
+            clients.Add(this);
+        }
+
+        var clientIp = Context.UserEndPoint.Address.ToString();
+        Console.WriteLine($"snsNotification->New client connected: {clientIp}");
+
+        //Broadcast($"New client connected: {clientIp}");
+    }
+
+    protected override void OnClose(CloseEventArgs e)
+    {
+        lock (clients)
+        {
+            clients.Remove(this);
+        }
+
+        try
+        {
+            if (Context != null && Context.UserEndPoint != null)
+            {
+                string clientIp = Context.UserEndPoint.Address.ToString();
+                Console.WriteLine($"snsNotification->client removed: {clientIp}");
+
+                // Broadcast($"client removed: {clientIp}");
+            }
+        }
+        catch (ObjectDisposedException ex)
+        {
+            Console.WriteLine($"ObjectDisposedException caught: {ex.Message}");
+        }
+    }
+
+    public void Broadcast(DateTime current)
+    {
+        string val;
+        int hour;
+        int minute;
+        string message;
+        DateTime startTime;
+        if (snsTextFile == null) return;//ファイルが読み込みされていないなら常にreturn
+        for (int i=length; i >= 1; i--) {
+            val = snsTextFile.GetIniValue(i.ToString(),"Start");
+            if (val == null) {
+                Console.WriteLine("SNSメッセージファイルのセクションやキーが不正です。調べてください");
+                Console.WriteLine("形式は[正の整数]Start=hour:minute Message=任意の文字列　でなければなりません");
+                break;
+            }
+            else
+            {
+                try {
+                    hour = int.Parse(snsTextFile.GetIniValue(i.ToString(), "Start").Split(':')[0]);
+                    minute = int.Parse(snsTextFile.GetIniValue(i.ToString(), "Start").Split(':')[1]);
+                    startTime = new DateTime(1997, 7, 1, hour, minute, 0);
+                    if (startTime <= current)
+                    {
+                        message = snsTextFile.GetIniValue(i.ToString(), "Messages");
+                        if (message != null)
+                        {
+                            Sessions.Broadcast(message);
+                            return;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Messageの値が不正か存在しません。必ずMessageキーに値を設定してください。");
+                            Console.WriteLine("例えば,Messages=今日は幹線道路が大渋滞であることが予測されています。と指定します");
+                        }
+                        break;
+                    }
+                }
+                catch (FormatException)
+                {
+                    Console.WriteLine("Startの値が不正です。Start=hour:minuteの形式で書いてください。全て半角です");
+                    Console.WriteLine("例えば,11時20分からメッセージを送りたいなら,Start=11:20と指定してください");
+                }
+                
+            }
+        }
+       
+    }
+}
 
 public class UserLog : WebSocketBehavior
 {
@@ -25,6 +131,9 @@ public class UserLog : WebSocketBehavior
         }
     }
     public static event Action<int> userEneterCountChanged;
+    private static HashSet<string> _userName;
+    public static HashSet<string> userName { get; set; } = new HashSet<string>();
+
 
     protected override void OnOpen()
     {
@@ -34,9 +143,9 @@ public class UserLog : WebSocketBehavior
         }
 
         var clientIp = Context.UserEndPoint.Address.ToString();
-        Console.WriteLine($"New client connected: {clientIp}");
+        Console.WriteLine($"UserLog->New client connected: {clientIp}");
 
-        Broadcast($"New client connected: {clientIp}");
+        
     }
 
     protected override void OnClose(CloseEventArgs e)
@@ -45,27 +154,49 @@ public class UserLog : WebSocketBehavior
         {
             clients.Remove(this);
         }
-        var clientIp = Context.UserEndPoint.Address.ToString();
-        Console.WriteLine($"client removed: {clientIp}");
 
-        Broadcast($"client removed: {clientIp}");
+        try
+        {
+            if (Context != null && Context.UserEndPoint != null)
+            {
+                string clientIp = Context.UserEndPoint.Address.ToString();
+                Console.WriteLine($"UserLog->client removed: {clientIp}");
+
+                // Broadcast($"client removed: {clientIp}");
+            }
+        }
+        catch (ObjectDisposedException ex)
+        {
+            Console.WriteLine($"ObjectDisposedException caught: {ex.Message}");
+        }
     }
 
     protected override void OnMessage(MessageEventArgs e)
     {
-        string result = Db.queryScalar<string>(Db.connectionString, "select name from user where user.id = @data", new Dictionary<string, string> { { "@data", e.Data } });
-        if (result != "null")
+        string result = Program.database.queryScalar<string>("select name from user where user.id = @data", new Dictionary<string, string> { { "@data", e.Data } });
+        if (result != null)
         {
             //ユーザーからのパスワード入力が成功した後の処理
-            userEnterCount++;//参加したユーザーをカウントする
-            Send("password is correct");
-            //サーバーに伝える
-            Console.WriteLine($"{result}が参加しました.");
+            userName.Add(result);
+            if(userEnterCount != userName.Count)
+            {
+                Send($"{result}:{e.Data}");//参加したユーザーの氏名を送信
+                //サーバーに伝える
+                Console.WriteLine($"{result}が参加しました.");
+                //異なるユーザーからの認証が成功した
+                userEnterCount = userName.Count;//参加したユーザーをカウントする
+
+            }
+            else
+            {
+                //同じユーザーからの認証
+                Send("user is already joined");
+            }
         }
         else
         {
             Console.WriteLine($"だれかがパスワードを間違えたようです.");
-            Send("password is not correct");
+            Send("password is incorrect");
         }
     }
 
@@ -124,10 +255,21 @@ public class SimulationNotification : WebSocketBehavior
         {
             clients.Remove(this);
         }
-        var clientIp = Context.UserEndPoint.Address.ToString();
-        Console.WriteLine($"SimulationNotification->client removed: {clientIp}");
 
-        //Broadcast($"client removed: {clientIp}");
+        try
+        {
+            if (Context != null && Context.UserEndPoint != null)
+            {
+                string clientIp = Context.UserEndPoint.Address.ToString();
+                Console.WriteLine($"SimulationNotification->client removed: {clientIp}");
+
+                // Broadcast($"client removed: {clientIp}");
+            }
+        }
+        catch (ObjectDisposedException ex)
+        {
+            Console.WriteLine($"ObjectDisposedException caught: {ex.Message}");
+        }
     }
 }
 
@@ -155,11 +297,22 @@ public class WebsocketTimer : WebSocketBehavior
         {
             clients.Remove(this);
         }
-        string clientIp = Context.UserEndPoint.Address.ToString();
-        Console.WriteLine($"WebsocketTimer->client removed: {clientIp}");
 
-        //Broadcast($"client removed: {clientIp}");
-    } 
+        try
+        {
+            if (Context != null && Context.UserEndPoint != null)
+            {
+                string clientIp = Context.UserEndPoint.Address.ToString();
+                Console.WriteLine($"WebsocketTimer->client removed: {clientIp}");
+
+                // Broadcast($"client removed: {clientIp}");
+            }
+        }
+        catch (ObjectDisposedException ex)
+        {
+            Console.WriteLine($"ObjectDisposedException caught: {ex.Message}");
+        }
+    }
     protected override void OnMessage(MessageEventArgs e)
     {
         // クライアントからのメッセージを受信した場合の処理
@@ -195,44 +348,51 @@ public class Simulation : WebSocketBehavior
         {
             clients.Remove(this);
         }
-        string clientIp = Context.UserEndPoint.Address.ToString();
-        Console.WriteLine($"Simulation->client removed: {clientIp}");
 
-        //Broadcast($"client removed: {clientIp}");
+        try
+        {
+            if (Context != null && Context.UserEndPoint != null)
+            {
+                string clientIp = Context.UserEndPoint.Address.ToString();
+                Console.WriteLine($"Simulation->client removed: {clientIp}");
+
+                // Broadcast($"client removed: {clientIp}");
+            }
+        }
+        catch (ObjectDisposedException ex)
+        {
+            Console.WriteLine($"ObjectDisposedException caught: {ex.Message}");
+        }
     }
     protected override void OnMessage(MessageEventArgs e)
     {
         string[] parts = e.Data.Split(':');//TEST:userId:111333という形式
         // クライアントからのメッセージを受信した場合の処理
-        //if()
+        //認証を行う
+        string query = "select user_group from simulation where id = @id";
+        if (!Program.database.queryScalar(query, new Dictionary<string, string> { { "@id", parts[1] } })) { Send($"your id is incorrect:{e.Data}"); return; }//認証に失敗しました
+        //帰宅遷移状況を表す文字列を認証する
+        if (!Program.database.simulationStringCheack(parts[2])) {Send($"your simulation status is incorrect:{e.Data}"); return;}
+        //選択された帰宅手段が書き込めるか認証する
+        if (!Program.database.simulationSelectCheck(parts[2], parts[1])) {Send($"your selected simulation status is incorrect:{e.Data}");return; }
         if (parts[0] == "TEST")//テスト時
         {
-
+            Send($"your selected simulation status is correct:{e.Data}");//送り返す
         }
         else if (parts[0] == "ACTION")//実際に書き込む
         {
-
+            //帰宅遷移状況を更新
+            Program.database.queryExcute("update simulation set status = @status where id = @id", new Dictionary<string, string> { {"@status" ,parts[2]},{ "@id",parts[1]} });
+            Send($"your selected simulation status was updated:{e.Data}");
         }
         else
         {
-            Send("simulation->OnMessages is incorrect");
+            Send($"Messages are incorrect please <TEST|ACTION>:{e.Data}");
         }
     }
 
     //帰宅遷移状況を表す文字列が適切か調べる
-    private bool simulationStringCheack(string status)
-    {
 
-        if (Regex.IsMatch(@"^1{1,14}[2-9]{0,13}$", status))//帰宅遷移状況を表す文字列形式になっているか確認
-        {
-            //形式は妥当なので、次の処理を勧める
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
     //選択できる帰宅遷移状況かを調べる
     /*
      * 現在のルールは以下の通り
@@ -258,76 +418,94 @@ public class Simulation : WebSocketBehavior
 　ホテル、社用車はアナログでくじ引き
      */
 
-    private bool simulationSelectCheck(string status, string id)
-    {
-        string query2 = "SELECT simulation.* FROM simulation JOIN user ON simulation.group = user.group WHERE user.id = @id AND simulation.status NOT LIKE '%1'";
-        int count = Db.queryScalar<int>(Db.connectionString, query2, new Dictionary<string, string> { { "@id", id } });
-        string lastSelect = status[status.Length - 1].ToString();
-        int simulationTime;
-        if (lastSelect == "1")
-        {
-            simulationTime = status.Length + 10;
-            if (Regex.IsMatch("^(13)$", simulationTime.ToString()))
-            {
-                if (!(count >= 1)) return false;
-            }
-            if (Regex.IsMatch("^(16)$", simulationTime.ToString()))
-            {
-                if (!(count >= 2)) return false;
-            }
-            if (Regex.IsMatch("^(23)$", simulationTime.ToString()))
-            {
-                if (!(count >= 3)) return false;
-            }
-            //何もなければtrueを返す
-            return true;
-        }
-        else if (Regex.IsMatch("^(2|3|4|5|6)$", lastSelect))
-        {
-            simulationTime = status.Length + 9;
-            string query = "SELECT simulation.* FROM simulation JOIN user ON simulation.group = user.group WHERE user.id = @id AND simulation.status LIKE @lastSelect";
-
-            //まず同じ帰宅手段を選んでいる人が同一グループに居ないか調べる
-            if (!Db.queryScalar(Db.connectionString, query, new Dictionary<string, string> { { "@id", id }, { "@lastSelect", $"%{lastSelect}" } })) return false;
-            //
-          
-            if (Regex.IsMatch("^(11|12|13)$", simulationTime.ToString()))
-            {
-
-                if (!(count +1 <= 1)) return false;
-
-            }
-            else if (Regex.IsMatch("^(|14|15|16)$", simulationTime.ToString()))
-            {
-                if (!(count + 1 <= 2)) return false;
-            }
-            else if (Regex.IsMatch("^(17|18|19|20|21|22|23)$", simulationTime.ToString()))
-            {
-                if (!(count + 1 <= 3)) return false;
-            }
-            //何もなければtrueを返す
-            return true;
-        }
-        else return false;
-    }
+    
 
 }
 
 
 public class Program
 {
+    // Win32 APIのSetConsoleCtrlHandler関数の宣言
+    [DllImport("Kernel32")]
+    private static extern bool SetConsoleCtrlHandler(HandlerRoutine Handler, bool Add);
+
+    // ハンドラルーチンのデリゲート型
+    private delegate bool HandlerRoutine(CtrlTypes CtrlType);
+
+    // ハンドラルーチンに渡される定数の定義
+    private enum CtrlTypes
+    {
+        CTRL_C_EVENT = 0,
+        CTRL_CLOSE_EVENT = 2,
+        CTRL_LOGOFF_EVENT = 5,
+        CTRL_SHUTDOWN_EVENT = 6
+    }
+
+
+
     private static System.Timers.Timer broadcastTimer;
     private static System.Timers.Timer TimebroadcastTimer;
     private static Stopwatch stopwatch;
     private static DateTime startTime;
     public static TimeSpan elapsed;
-    public static DateTime currentTime = new DateTime(1997, 7, 1, 11, 0, 0);
+    private static DateTime _currentTime = new DateTime(1997, 7, 1, 11, 0, 0);
+    public static DateTime currentTime {
+        get { return _currentTime; } 
+        private set { 
+            _currentTime = value;
+            //時刻が変化するたびにイベントリスナーを実行する.
+            TimerChanged?.Invoke(_currentTime);
+        } 
+    }
+    
+    public static event Action<DateTime> TimerChanged;
     private static WebSocketServer wssv; // 静的フィールドとして定義
     public static float SimulationTimeScale;
+    public static Db database = new Db();
 
+
+    private static bool ConsoleCtrlCheck(CtrlTypes ctrlType)
+    {
+        // ウィンドウが閉じられたときの処理
+        if (ctrlType == CtrlTypes.CTRL_CLOSE_EVENT)
+        {
+            Console.WriteLine("コンソールウィンドウを閉じます");
+            // 任意の処理をここに追加
+            if(database.connectionString != null)
+            {
+                Console.WriteLine("シミュレーション結果をファイルに書き込みます");
+                database.writeSqlite();//ファイルに書き込む
+                Console.WriteLine("シュミレーション結果をデータベースから削除します");
+                database.queryExcute("drop table simulation");//simulationテーブルを削除
+            }
+        }
+        return true;
+    }
     public static void Main(string[] args)
     {
-        Db.Run();//データベースの初期化を行う.
+        SetConsoleCtrlHandler(new HandlerRoutine(ConsoleCtrlCheck), true);//ウィンドウクローズ時の処理
+
+
+        database.Run();//データベースの初期化を行う.
+        //snsメッセージファイルを読み込む
+        snsNotification.snsTextFile = new IniReader();//初期化
+        while (true)
+        {
+            Console.WriteLine("snsメッセージファイルを読み込みます");
+            Console.WriteLine("ファイルパスを指定してください");
+            Console.WriteLine("もし不要なら'none'と打ち込んでください");
+            string iniPath = Console.ReadLine();
+            if (iniPath == "none") break;
+            else if (snsNotification.snsTextFile.LoadIniFile(iniPath))
+            {
+                Console.WriteLine("読み込みに成功しました");
+                break;
+            }
+            else
+            {
+                Console.WriteLine("読み込みに失敗しました");
+            }
+        }
         //websocket通信を確立する
         Console.OutputEncoding = Encoding.UTF8;
         wssv = new WebSocketServer("ws://0.0.0.0:8080");
@@ -335,12 +513,14 @@ public class Program
         wssv.AddWebSocketService<UserLog>("/UserLog");
         wssv.AddWebSocketService<SimulationNotification>("/Notification");
         wssv.AddWebSocketService<WebsocketTimer>("/Timer");
-        wssv.AddWebSocketService<Simulation>("/Simulation");
+        wssv.AddWebSocketService<Simulation>("/Simulation");//snsNotification
+        wssv.AddWebSocketService<snsNotification>("/SNS");
         wssv.Start();
         Console.WriteLine("WebSocket server started at ws://localhost:8080/UserLog");
         Console.WriteLine("WebSocket server started at ws://localhost:8080/Workshop");
         Console.WriteLine("WebSocket server started at ws://localhost:8080/Timer");
         Console.WriteLine("WebSocket server started at ws://localhost:8080/Simulation");
+        Console.WriteLine("WebSocket server started at ws://localhost:8080/SNS");
         // ブロードキャストメッセージを定期的に送信
         broadcastTimer = new System.Timers.Timer(5000);
         broadcastTimer.Elapsed += BroadcastMessage;
@@ -350,9 +530,9 @@ public class Program
         //ユーザーが参加するまで待つ.
         UserLog.userEneterCountChanged += (int count) =>
         {
-            if (count == Db.userTableColumnCount) return;
+            if (count != database.userTableColumnCount) return;
             //ユーザーの参加が完了した後の処理
-            Console.WriteLine("コマンドを入力してください（サーバーを終了するには 'サーバーストップ' と入力）");
+            Console.WriteLine("コマンドを入力してください（サーバーを終了するには 'stop' と入力）");
             Console.WriteLine("コマンドを入力してください（シミュレーションを開始するには 'start' と入力）：");
 
             while (true)
@@ -361,11 +541,10 @@ public class Program
                 string input = Console.ReadLine();
 
 
-                if (input == "サーバーストップ")
+                if (input == "stop")
                 {
                     break;
                 }
-
                 switch (input)
                 {
                     case "start":
@@ -374,7 +553,7 @@ public class Program
                             {
                                 Console.WriteLine("シミュレーションの総時間を指定してください.21.5394分なら21.5394と打ってください.分単位です.");
                                 Console.WriteLine("標準時間は17.75です.それ以外は残り〇〇秒で表示がおかしくなる可能性あり.1分以上推奨");
-                                Console.Write("総時間を入力してください: ");
+                                Console.WriteLine("総時間を入力してください: ");
                                 string input2 = Console.ReadLine();
 
                                 // 入力が数値に変換できるか確認
@@ -408,7 +587,33 @@ public class Program
                             wssv.WebSocketServices["/Notification"].Sessions.Broadcast("WorkshopSimulationStart");
                             Console.WriteLine("");//改行を行う.
                             Console.WriteLine("シミュレーションを開始しました。");
-
+                            Thread timeThread = null;
+                            object lockobj = new object();
+                            //タイマーリスナーの設定
+                            TimerChanged += (DateTime current) => {
+                                
+                                if (timeThread == null)//初期化
+                                {
+                                    timeThread = new Thread(() =>
+                                    {
+                                        Console.Write($"\r現在の時刻: {currentTime:HH時mm分ss秒}");
+                                        Console.WriteLine("");
+                                        while (true)
+                                        {
+                                            lock (lockobj)
+                                            {
+                                                Console.SetCursorPosition(0, Console.CursorTop - 1);
+                                                Console.Write($"\r現在の時刻: {currentTime:HH時mm分ss秒}");
+                                                Console.WriteLine("");
+                                            }
+                                            Thread.Sleep(2000);
+                                        }
+                                    });
+                                    timeThread.IsBackground = true;
+                                    timeThread.Start();
+                                }
+                            };
+                            TimerChanged += snsNotification.Instance.Broadcast;
                             if (TimebroadcastTimer == null)
                             {
                                 // タイマーの設定
@@ -425,7 +630,7 @@ public class Program
                                 //startTime = new DateTime(1997, 7, 1, 11, 0, 0);
                             }
 
-                            break;
+                            goto outroop;
                         }
 
                     case "ユーザーを追加する":
@@ -441,8 +646,32 @@ public class Program
                         }
                 }
             }
+            outroop:
+            Console.WriteLine("参加者全員にメッセージを送信します.コピペ入力してください");
+            Console.WriteLine("サーバーを終了したい場合は'stop'と入力してください");
+            while (true)
+            {
+                
+                string input = Console.ReadLine();
+                if (input == "stop") break;
+                else
+                {
+                    wssv.WebSocketServices["/SNS"].Sessions.Broadcast(input);
+                }
+            }
             wssv.Stop();
         };
+
+        // メインスレッドをブロックする
+        Console.WriteLine("アプリケーションを終了するには 'exit' と入力してください。");
+        while (true)
+        {
+            string input = Console.ReadLine();
+            if (input == "exit")
+            {
+                break;
+            }
+        }
 
     }
 
@@ -486,6 +715,6 @@ public class Program
         currentTime = currentTime.Add(multipliedElapsed);
 
         wssv.WebSocketServices["/Timer"].Sessions.Broadcast(currentTime.ToString());
-        Console.Write($"\r現在の時刻: {currentTime:HH時mm分ss秒} > ");
+        
     }
 }
