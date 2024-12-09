@@ -40,3 +40,23 @@ C:\Users\tk71\Documents\Unity Project\workshop\server\test1111\test1111\bin\Debu
 C:\Users\tk71\Documents\Unity Project\workshop\server\test1111\test1111\bin\Debug\sqlite3_database\sample
 C:\Users\tk71\Documents\Unity Project\workshop\server\test1111\test1111\obj\Debug\test1111.csproj.AssemblyReference.cache
 C:\Users\tk71\Documents\Unity Project\workshop\server\test1111\test1111\obj\Debug\test1111.csproj.Up2Date
+C:\Users\tk71\Downloads\workshopSimulationServerTest1\WorkshopSimulationServer\test1111\bin\Debug\Program.cs
+C:\Users\tk71\Downloads\workshopSimulationServerTest1\WorkshopSimulationServer\test1111\bin\Debug\sqlite3_database\sample
+C:\Users\tk71\Downloads\workshopSimulationServerTest1\WorkshopSimulationServer\test1111\bin\Debug\test1111.exe.config
+C:\Users\tk71\Downloads\workshopSimulationServerTest1\WorkshopSimulationServer\test1111\bin\Debug\test1111.exe
+C:\Users\tk71\Downloads\workshopSimulationServerTest1\WorkshopSimulationServer\test1111\bin\Debug\test1111.pdb
+C:\Users\tk71\Downloads\workshopSimulationServerTest1\WorkshopSimulationServer\test1111\bin\Debug\EntityFramework.dll
+C:\Users\tk71\Downloads\workshopSimulationServerTest1\WorkshopSimulationServer\test1111\bin\Debug\EntityFramework.SqlServer.dll
+C:\Users\tk71\Downloads\workshopSimulationServerTest1\WorkshopSimulationServer\test1111\bin\Debug\System.Data.SQLite.dll
+C:\Users\tk71\Downloads\workshopSimulationServerTest1\WorkshopSimulationServer\test1111\bin\Debug\System.Data.SQLite.EF6.dll
+C:\Users\tk71\Downloads\workshopSimulationServerTest1\WorkshopSimulationServer\test1111\bin\Debug\System.Data.SQLite.Linq.dll
+C:\Users\tk71\Downloads\workshopSimulationServerTest1\WorkshopSimulationServer\test1111\bin\Debug\websocket-sharp.dll
+C:\Users\tk71\Downloads\workshopSimulationServerTest1\WorkshopSimulationServer\test1111\bin\Debug\EntityFramework.xml
+C:\Users\tk71\Downloads\workshopSimulationServerTest1\WorkshopSimulationServer\test1111\bin\Debug\EntityFramework.SqlServer.xml
+C:\Users\tk71\Downloads\workshopSimulationServerTest1\WorkshopSimulationServer\test1111\bin\Debug\System.Data.SQLite.xml
+C:\Users\tk71\Downloads\workshopSimulationServerTest1\WorkshopSimulationServer\test1111\bin\Debug\websocket-sharp.xml
+C:\Users\tk71\Downloads\workshopSimulationServerTest1\WorkshopSimulationServer\test1111\obj\Debug\test1111.csproj.AssemblyReference.cache
+C:\Users\tk71\Downloads\workshopSimulationServerTest1\WorkshopSimulationServer\test1111\obj\Debug\test1111.csproj.CoreCompileInputs.cache
+C:\Users\tk71\Downloads\workshopSimulationServerTest1\WorkshopSimulationServer\test1111\obj\Debug\test1111.csproj.Up2Date
+C:\Users\tk71\Downloads\workshopSimulationServerTest1\WorkshopSimulationServer\test1111\obj\Debug\test1111.exe
+C:\Users\tk71\Downloads\workshopSimulationServerTest1\WorkshopSimulationServer\test1111\obj\Debug\test1111.pdb
