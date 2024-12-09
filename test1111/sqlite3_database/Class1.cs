@@ -78,12 +78,13 @@ namespace test1111.sqlite3_database
                 }
                 if (Regex.IsMatch(simulationTime.ToString(), "^(16)$"))
                 {
-                    if ((count == 2)) return false;
+                    if ((count == 1)) return false;
                 }
-                if (Regex.IsMatch(simulationTime.ToString(), "^(23)$"))
+                /*if (Regex.IsMatch(simulationTime.ToString(), "^(23)$"))
                 {
                     if ((count == 1)) return false;
                 }
+                */
                 //何もなければtrueを返す
                 return true;
             }
@@ -106,21 +107,40 @@ namespace test1111.sqlite3_database
                 }
                 else if (Regex.IsMatch(simulationTime.ToString(), "^(|14|15|16)$"))
                 {
-                    if (!(count + 1 <= 2)) return false;
+                    if (!Regex.IsMatch(lastSelect, "^(3)$"))
+                    {
+                        //3を除いてカウントする.
+                        query2 = "SELECT count(*) FROM simulation JOIN user ON simulation.user_group = user.user_group WHERE user.id = @id AND (simulation.status not LIKE '%1' and simulation.status not LIKE '%3' and simulation.id != @id)";
+                        count = queryScalar<int>(query2, new Dictionary<string, string> { { "@id", id }, { "@length", status.Length.ToString() } });
+
+                        if (!(count + 1 <= 2)) return false;
+                    }
                 }
                 else if (Regex.IsMatch(simulationTime.ToString(), "^(17|18|19|20|21|22|23)$"))
                 {
-                    if (!(count + 1 <= 3)) return false;
+                    if (!(count + 1 <= 4)) return false;
                 }
 
                 if (Regex.IsMatch(lastSelect, "^(6)$"))
                 {
-                    if (simulationTime >= 16)
+                    if (simulationTime >= 14)
                     {
                         return !queryScalar("select id from simulation where status like '%6' and id != @id", new Dictionary<string, string> { { "@id", id } });
                     }
                     else return false;
 
+                }
+
+                if (Regex.IsMatch(lastSelect, "^(3)$"))
+                {
+                    if (simulationTime <= 13 || simulationTime >= 17)
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        return true;
+                    }
                 }
 
                 //何もなければtrueを返す
