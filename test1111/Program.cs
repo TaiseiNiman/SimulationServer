@@ -195,7 +195,7 @@ public class UserLog : WebSocketBehavior
         }
         else
         {
-            Console.WriteLine($"だれかがパスワードを間違えたようです.");
+            //Console.WriteLine($"だれかがパスワードを間違えたようです.");
             Send("password is incorrect");
         }
     }
@@ -367,6 +367,15 @@ public class Simulation : WebSocketBehavior
     protected override void OnMessage(MessageEventArgs e)
     {
         string[] parts = e.Data.Split(':');//TEST:userId:111333という形式
+
+        //特別な処理
+        if (parts[0] == "DELETE")
+        {
+            Program.database.queryExcute("update simulation set status = @status where id = @id", new Dictionary<string, string> { { "@status", parts[2] }, { "@id", parts[1] } });
+            Send($"your selected simulation status was cleared:{e.Data}");
+            return;
+        }
+
         // クライアントからのメッセージを受信した場合の処理
         //認証を行う
         string query = "select user_group from simulation where id = @id";
@@ -603,7 +612,7 @@ public class Program
                                             lock (lockobj)
                                             {
                                                 Console.SetCursorPosition(0, Console.CursorTop - 1);
-                                                Console.Write($"\r現在の時刻: {currentTime:HH時mm分ss秒}");
+                                                Console.Write($"\r現在の時刻: {currentTime:HH時mm分}");
                                                 Console.WriteLine("");
                                             }
                                             Thread.Sleep(2000);
@@ -648,12 +657,25 @@ public class Program
             }
             outroop:
             Console.WriteLine("参加者全員にメッセージを送信します.コピペ入力してください");
+            Console.WriteLine("また,時刻を一時停止したい場合は'pause'と入力してください");
+            Console.WriteLine("時刻を再開したい場合は'resume'と入力してください");
             Console.WriteLine("サーバーを終了したい場合は'stop'と入力してください");
             while (true)
             {
                 
                 string input = Console.ReadLine();
                 if (input == "stop") break;
+                else if(input == "pause")
+                {
+                    //時刻を停止する
+                    TimebroadcastTimer.Elapsed -= OnTimedEvent;
+                }
+                else if(input == "resume")
+                {
+                    //時刻を再開する
+                    TimebroadcastTimer.Elapsed += OnTimedEvent;
+                    stopwatch.Restart(); // ストップウォッチをリセット
+                }
                 else
                 {
                     wssv.WebSocketServices["/SNS"].Sessions.Broadcast(input);
