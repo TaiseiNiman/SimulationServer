@@ -605,7 +605,7 @@ public class Program
                                 {
                                     timeThread = new Thread(() =>
                                     {
-                                        Console.Write($"\r現在の時刻: {currentTime:HH時mm分ss秒}");
+                                        Console.Write($"\r現在の時刻: {currentTime:HH時mm分}");
                                         Console.WriteLine("");
                                         while (true)
                                         {
