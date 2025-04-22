@@ -13,6 +13,7 @@ using test1111;
 using test1111.sqlite3_database;
 using System.Text.RegularExpressions;
 using System.Runtime.InteropServices;
+using static Simulation;
 
 public class snsNotification: WebSocketBehavior
 {
@@ -400,6 +401,70 @@ public class Simulation : WebSocketBehavior
         }
     }
 
+    public class MappingServer : WebSocketBehavior
+    {
+
+        private static List<MappingServer> clients = new List<MappingServer>();
+
+        protected override void OnOpen()
+        {
+            lock (clients)
+            {
+                clients.Add(this);
+            }
+
+            var clientIp = Context.UserEndPoint.Address.ToString();
+            Console.WriteLine($"3DMapping->New client connected: {clientIp}");
+
+            //Broadcast($"New client connected: {clientIp}");
+        }
+
+        protected override void OnClose(CloseEventArgs e)
+        {
+            lock (clients)
+            {
+                clients.Remove(this);
+            }
+
+            try
+            {
+                if (Context != null && Context.UserEndPoint != null)
+                {
+                    string clientIp = Context.UserEndPoint.Address.ToString();
+                    Console.WriteLine($"3DMapping->client removed: {clientIp}");
+
+                    // Broadcast($"client removed: {clientIp}");
+                }
+            }
+            catch (ObjectDisposedException ex)
+            {
+                Console.WriteLine($"ObjectDisposedException caught: {ex.Message}");
+            }
+        }
+        protected override void OnMessage(MessageEventArgs e)
+        {
+            // クライアントからのメッセージを受信した場合の処理
+            //送信してきたクライアント以外のクライアントに受け取ったデータをそのまま渡す.
+            //foreach (MappingServer client in clients) {
+            //    if (client != this) client.Send(e.Data);
+            //}
+            Broadcast(e.Data);
+            Console.WriteLine("Message received: " + e.Data);
+        }
+
+        private void Broadcast(string message)
+        {
+            lock (clients)
+            {
+                foreach (var client in clients)
+                {
+                    client.Send(message);
+                }
+            }
+        }
+
+    }
+
     //帰宅遷移状況を表す文字列が適切か調べる
 
     //選択できる帰宅遷移状況かを調べる
@@ -427,7 +492,7 @@ public class Simulation : WebSocketBehavior
 　ホテル、社用車はアナログでくじ引き
      */
 
-    
+
 
 }
 
@@ -524,12 +589,14 @@ public class Program
         wssv.AddWebSocketService<WebsocketTimer>("/Timer");
         wssv.AddWebSocketService<Simulation>("/Simulation");//snsNotification
         wssv.AddWebSocketService<snsNotification>("/SNS");
+        wssv.AddWebSocketService<MappingServer>("/3DMapping");
         wssv.Start();
         Console.WriteLine("WebSocket server started at ws://localhost:8080/UserLog");
         Console.WriteLine("WebSocket server started at ws://localhost:8080/Workshop");
         Console.WriteLine("WebSocket server started at ws://localhost:8080/Timer");
         Console.WriteLine("WebSocket server started at ws://localhost:8080/Simulation");
         Console.WriteLine("WebSocket server started at ws://localhost:8080/SNS");
+        Console.WriteLine("WebSocket server started at ws://localhost:8080/3DMapping");
         // ブロードキャストメッセージを定期的に送信
         broadcastTimer = new System.Timers.Timer(5000);
         broadcastTimer.Elapsed += BroadcastMessage;
