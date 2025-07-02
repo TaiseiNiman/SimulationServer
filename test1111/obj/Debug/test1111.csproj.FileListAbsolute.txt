@@ -82,3 +82,5 @@ C:\Users\cmk14002\SimulationServer\test1111\obj\Debug\test1111.exe
 C:\Users\cmk14002\SimulationServer\test1111\obj\Debug\test1111.pdb
 C:\Users\cmk14002\SimulationServer\test1111\bin\Debug\x86\sqlite3.dll
 C:\Users\cmk14002\SimulationServer\test1111\bin\Debug\x64\sqlite3.dll
+C:\Users\cmk14002\SimulationServer\test1111\bin\Debug\Newtonsoft.Json.dll
+C:\Users\cmk14002\SimulationServer\test1111\bin\Debug\Newtonsoft.Json.xml

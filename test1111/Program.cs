@@ -14,6 +14,7 @@ using test1111.sqlite3_database;
 using System.Text.RegularExpressions;
 using System.Runtime.InteropServices;
 using static Simulation;
+using Newtonsoft.Json;
 
 public class snsNotification: WebSocketBehavior
 {
@@ -403,15 +404,12 @@ public class Simulation : WebSocketBehavior
 
     public class MappingServer : WebSocketBehavior
     {
-
+        private readonly object _lock = new object();//clientsとclientsIdの値を書き換えるときは,必ず_lockオブジェクトでロックしたブロックスコープ内に書くこと.
         private static List<MappingServer> clients = new List<MappingServer>();
-
+        private static List<string> clientsId = new List<string>();
+            
         protected override void OnOpen()
-        {
-            lock (clients)
-            {
-                clients.Add(this);
-            }
+        {   
 
             var clientIp = Context.UserEndPoint.Address.ToString();
             Console.WriteLine($"3DMapping->New client connected: {clientIp}");
@@ -421,11 +419,11 @@ public class Simulation : WebSocketBehavior
 
         protected override void OnClose(CloseEventArgs e)
         {
-            lock (clients)
+            lock (_lock)
             {
+                clientsId.Remove(clientsId[clients.IndexOf(this)]);
                 clients.Remove(this);
             }
-
             try
             {
                 if (Context != null && Context.UserEndPoint != null)
@@ -447,9 +445,42 @@ public class Simulation : WebSocketBehavior
             //送信してきたクライアント以外のクライアントに受け取ったデータをそのまま渡す.
             //foreach (MappingServer client in clients) {
             //    if (client != this) client.Send(e.Data);
-            //}
-            Broadcast(e.Data);
-            Console.WriteLine("Message received: " + e.Data);
+            //
+            //メッセージの構造:メタ情報,本文のjson文字列→ meta: string, contents: 任意のオブジェクト ただmeta情報でメッセージを識別するという単純な方法を取った
+            /*
+             * metaの値(文字列)一覧
+             *・"ClientsId" = クライアントのその役割に応じて識別するためのIDを付与したメッセージタイプ
+             *　本文のハッシュ値がそのままクライアントIDになる。16文字の英数字の形式を許せば,どんな値でもよいが実際は使われる文字列（役割）は決まっているので無視されることになる.
+             *　また本文はクライアント側で一対一対応あるいは無視できる確率で重複する一方向性関数でハッシュ化する.そうすることによって,クライアントの元の識別ＩＤがわからなくなり,
+             *　例えばクライアントの識別Ｉｄに応じて与えられる役割・権限を乗っ取ることを防ぐことができる（はず）。ただし,役割を与えるIDは容易に想像つくようなものであってはならないことに注意(例：Ownerなど)
+             *・"3Ddata"
+             */
+            //Dictionary<string, object> dataJson = JsonConvert.DeserializeObject<Dictionary<string,object>>(e.Data);
+            try
+            {
+                Dictionary<string, object> dataJson = JsonConvert.DeserializeObject<Dictionary<string, object>>(e.Data);
+                //Debug.Log("meta: " + json["meta"]);
+                if (dataJson["meta"].ToString() == "clientsId")
+                {
+                    lock (_lock)
+                    {
+                        clients.Add(this);
+                        clientsId.Add(dataJson["contents"].ToString());
+                    }
+                }
+                else if (dataJson["meta"].ToString() == "3Ddata")
+                {
+                    int index = clientsId.IndexOf("compute");
+                    if (index != -1) clients[index].Send(JsonConvert.SerializeObject(dataJson["contents"]));
+                }
+                Console.WriteLine("Message received: " + e.Data);
+            }
+            catch (JsonReaderException ex)
+            {
+                //Debug.Log("JSONパース失敗: " + ex.Message);
+                //Debug.Log("受信文字列: " + jsonStr);
+            }
+            
         }
 
         private void Broadcast(string message)
@@ -461,6 +492,27 @@ public class Simulation : WebSocketBehavior
                     client.Send(message);
                 }
             }
+        }
+        public static void DelayTest() {
+            Console.WriteLine("カメラのフレームの送信間隔を設定してください.");
+            while (true)
+            {
+                float delayInput = float.Parse(Console.ReadLine());
+                if (delayInput == -1.0f)
+                {
+                    break;
+                }
+                else if (delayInput < 0.01f)
+                {
+                    continue;
+                }
+                else
+                {
+                    if(clientsId.IndexOf("camera") >= 0) clients[clientsId.IndexOf("camera")].Send($" {{ 'meta': 'delay' , 'contents': {delayInput.ToString()} }}");
+                    continue;
+                }
+            }
+
         }
 
     }
@@ -602,6 +654,9 @@ public class Program
         broadcastTimer.Elapsed += BroadcastMessage;
         broadcastTimer.AutoReset = true;
         broadcastTimer.Enabled = true;
+
+        //テスト用にカメラのフレーム間隔を指定
+        MappingServer.DelayTest();
 
         //ユーザーが参加するまで待つ.
         UserLog.userEneterCountChanged += (int count) =>
